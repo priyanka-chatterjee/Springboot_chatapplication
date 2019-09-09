@@ -133,13 +133,13 @@
 <body>
 <div class="logo_box">
     <h3>Chat Room</h3>
-    <form action="index" method="get">
+    <form>
         <div class="input_outer">
             <span class="u_user"></span>
             <input id="username" name="username" class="text" type="text" placeholder="Username">
         </div>
         <div class="mb2">
-            <button class="act-but submit" type="submit">Login</button>
+            <a class="act-but submit" onclick="login()">Login</a>
         </div>
     </form>
 
@@ -152,8 +152,9 @@
      */
     function login() {
         // TODO: complete the login function
-        //var username = document.getElementById('username').value;
-       // window.location.href = "/index?username=" + username
+        var username = document.getElementById('username').value;
+        //var username = [[${username}]];
+        window.location.href = "http://localhost:8080/index?username=" + username;
     }
 
     /**
