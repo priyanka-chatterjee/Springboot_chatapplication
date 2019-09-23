@@ -1,5 +1,7 @@
 package edu.udacity.java.nano.chat;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * WebSocket message model
  */

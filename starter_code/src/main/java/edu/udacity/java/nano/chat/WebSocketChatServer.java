@@ -20,8 +20,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Component
 @ServerEndpoint(value="/chat/{username}")
 public class WebSocketChatServer {
-    //private Session session;
-    //private static Set<WebSocketChatServer> chatEndpoints = new CopyOnWriteArraySet<>();
+    private Session session;
+    private static Set<WebSocketChatServer> chatEndpoints = new CopyOnWriteArraySet<>();
     /**
      * All chat sessions.
      */
@@ -30,7 +30,7 @@ public class WebSocketChatServer {
     private static void sendMessageToAll(Message message)
             throws IOException {
         //TODO: add send message method.
-        /*chatEndpoints.forEach(endpoint -> {
+        chatEndpoints.forEach(endpoint -> {
             synchronized (endpoint) {
                 try {
                     endpoint.session.getBasicRemote().
@@ -39,7 +39,7 @@ public class WebSocketChatServer {
                     e.printStackTrace();
                 }
             }
-        }); */
+        });
     }
 
     /**
@@ -52,16 +52,16 @@ public class WebSocketChatServer {
 
     @OnOpen
     public void onOpen(Session session, @PathParam("username") String username) throws IOException, EncodeException {
-        //this.session = session;
-        //chatEndpoints.add(this);
+        this.session = session;
+        chatEndpoints.add(this);
         onlineSessions.put(username, session);
-        /*Message message = new Message();
+        Message message = new Message();
         String userName = username;
         message.setUsername(username);
         message.setMessage("Connected!");
         String prevCount = message.getOnlineCount();
         // TODO: Increase count by 1
-        sendMessageToAll(message); */
+        sendMessageToAll(message);
         System.out.println( username + " just joined the chat!");
     }
 
@@ -69,9 +69,12 @@ public class WebSocketChatServer {
      * Send message, 1) get username and session, 2) send message to all.
      */
     @OnMessage
-    public void onMessage(Session session, String jsonStr, @PathParam("username") String username) {
+    public void onMessage(Session session, String jsonStr, @PathParam("username") String username) throws IOException {
         //TODO: add send message.
-        //message.setFrom(username);
+        Message message = new Message();
+        message.setUsername(username);
+        message.setMessage("Connected!");
+        sendMessageToAll(message);
         //broadcast(message);
     }
 
