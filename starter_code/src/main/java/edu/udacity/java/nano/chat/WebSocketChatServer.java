@@ -71,6 +71,7 @@ public class WebSocketChatServer {
     @OnMessage
     public void onMessage(Session session, String jsonStr, @PathParam("username") String username) throws IOException {
         //TODO: add send message.
+        // MEssage broadcast
         Message message = new Message();
         message.setUsername(username);
         message.setMessage("Connected!");
