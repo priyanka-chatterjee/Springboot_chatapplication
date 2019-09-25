@@ -1,6 +1,9 @@
 package edu.udacity.java.nano.chat;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.springframework.stereotype.Component;
+
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -8,7 +11,6 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * WebSocket Server
@@ -21,25 +23,31 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @ServerEndpoint(value="/chat/{username}")
 public class WebSocketChatServer {
     private Session session;
-    private static Set<WebSocketChatServer> chatEndpoints = new CopyOnWriteArraySet<>();
     /**
      * All chat sessions.
      */
     private static Map<String, Session> onlineSessions = new ConcurrentHashMap<>();
-
+    private static JsonObject convertStringToJSON(String jsonStr) {
+        JsonObject jsonObject = new JsonParser().parse(jsonStr).getAsJsonObject();
+        return jsonObject;
+    }
     private static void sendMessageToAll(Message message)
             throws IOException {
-        //TODO: add send message method.
-        chatEndpoints.forEach(endpoint -> {
-            synchronized (endpoint) {
-                try {
-                    endpoint.session.getBasicRemote().
-                            sendObject(message);
-                } catch (IOException | EncodeException e) {
-                    e.printStackTrace();
+        // TODO: add send message method.
+        // For each online session, send message in json format
+        // convert the message to a json string first
+        try {
+            for (Map.Entry<String, Session> userSession: onlineSessions.entrySet()) {
+                JsonObject jsonObject = convertStringToJSON(message.getMessage());
+                Session sessionId = userSession.getValue();
+                if (sessionId != null) {
+                    // broadcast json object
+                    sessionId.getBasicRemote().sendText(userSession.getKey() + " : " + jsonObject);
                 }
             }
-        });
+        } catch (Exception ex) {
+
+        }
     }
 
     /**
@@ -53,15 +61,16 @@ public class WebSocketChatServer {
     @OnOpen
     public void onOpen(Session session, @PathParam("username") String username) throws IOException, EncodeException {
         this.session = session;
-        chatEndpoints.add(this);
+        // add session to onlineSessions map
         onlineSessions.put(username, session);
+        // construct a new message containing a online session size
         Message message = new Message();
         String userName = username;
         message.setUsername(username);
         message.setMessage("Connected!");
         String prevCount = message.getOnlineCount();
         // TODO: Increase count by 1
-        sendMessageToAll(message);
+        //sendMessageToAll(message);
         System.out.println( username + " just joined the chat!");
     }
 
@@ -70,8 +79,8 @@ public class WebSocketChatServer {
      */
     @OnMessage
     public void onMessage(Session session, String jsonStr, @PathParam("username") String username) throws IOException {
-        //TODO: add send message.
-        // MEssage broadcast
+        // TODO: add send message.
+        // create a new message using the jsonStr parameter
         Message message = new Message();
         message.setUsername(username);
         message.setMessage("Connected!");
