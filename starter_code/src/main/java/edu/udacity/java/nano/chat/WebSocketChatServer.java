@@ -1,9 +1,7 @@
 package edu.udacity.java.nano.chat;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.springframework.stereotype.Component;
-
+import org.json.*;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -27,36 +25,22 @@ public class WebSocketChatServer {
      * All chat sessions.
      */
     private static Map<String, Session> onlineSessions = new ConcurrentHashMap<>();
-    private static JsonObject convertStringToJSON(String jsonStr) {
-        JsonObject jsonObject = new JsonParser().parse(jsonStr).getAsJsonObject();
-        return jsonObject;
-    }
-    private static void sendMessageToAll(Message message)
+
+    private static void sendMessageToAll(String jsonString)
             throws IOException {
         // TODO: add send message method.
         // For each online session, send message in json format
         // convert the message to a json string first
         try {
-            for (Map.Entry<String, Session> userSession: onlineSessions.entrySet()) {
-                JsonObject jsonObject = convertStringToJSON(message.getMessage());
-                Session sessionId = userSession.getValue();
-                if (sessionId != null) {
-                    // broadcast json object
-                    sessionId.getBasicRemote().sendText(userSession.getKey() + " : " + jsonObject);
-                }
-            }
+            //(Session sess: onlineSessions.values()) { if (sess.isOpen()) { sess.getBasicRemote().sendObject(msg); } }
         } catch (Exception ex) {
-
+            ex.printStackTrace();
         }
     }
 
     /**
      * Open connection, 1) add session, 2) add user.
      */
-    //@OnOpen
-    /*public void onOpen(Session session) {
-        //TODO: add on open connection.
-    } */
 
     @OnOpen
     public void onOpen(Session session, @PathParam("username") String username) throws IOException, EncodeException {
@@ -78,14 +62,19 @@ public class WebSocketChatServer {
      * Send message, 1) get username and session, 2) send message to all.
      */
     @OnMessage
-    public void onMessage(Session session, String jsonStr, @PathParam("username") String username) throws IOException {
+    public void onMessage(Session session, String jsonStr, @PathParam("username") String username) throws IOException, JSONException {
         // TODO: add send message.
         // create a new message using the jsonStr parameter
         Message message = new Message();
         message.setUsername(username);
-        message.setMessage("Connected!");
-        sendMessageToAll(message);
-        //broadcast(message);
+        System.out.println("entered on_message");
+        JSONObject objJson = new JSONObject(jsonStr);
+        String userName = objJson.getString("username");
+        String msg = objJson.getString("msg");
+        message.setMessage("{type");
+        // onlineSessions.size()
+        //sendMessageToAll(jsonString);
+
     }
 
     /**
